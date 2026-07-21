@@ -55,6 +55,9 @@ import { useRouter } from "vue-router";
 import BaseButton from "../components/common/BaseButton.vue";
 import TextField from "../components/common/TextField.vue";
 import PasswordField from "../components/common/PasswordField.vue";
+import { useUserStore } from "../stores/userStore";
+
+const userStore = useUserStore();
 
 const router = useRouter();
 
@@ -69,22 +72,27 @@ const errorMessage = ref("");
  * ログインボタン押下
  */
 function login() {
-  // 入力チェック
   if (!email.value.trim()) {
     errorMessage.value = "メールアドレスを入力してください。";
+
     return;
   }
 
   if (!password.value.trim()) {
     errorMessage.value = "パスワードを入力してください。";
+
     return;
   }
 
-  // エラー解除
-  errorMessage.value = "";
+  const success = userStore.login(email.value, password.value);
 
-  // コミット⑥でuserStoreによる認証へ変更
-  router.push("/home");
+  if (success) {
+    errorMessage.value = "";
+
+    router.push("/home");
+  } else {
+    errorMessage.value = "メールアドレスまたはパスワードが違います。";
+  }
 }
 </script>
 

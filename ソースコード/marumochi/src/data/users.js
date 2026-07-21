@@ -1,23 +1,22 @@
-export default [
+export const users = [
   {
     id: 1,
+    userName: "テストユーザー",
+    email: "test@example.com",
+    password: "password",
 
-    userId: 1,
+    friendIds: [],
 
-    title: "サンプルTODO",
+    friendCount: 0,
 
-    hasDeadline: true,
+    loginDays: 0,
 
-    deadline: new Date(),
+    totalTodoCount: 0,
 
-    repeat: false,
+    createdAt: "2026-07-01",
 
-    repeatType: null,
+    isLoggedIn: false,
 
-    progress: 0,
-
-    completed: false,
-
-    createdAt: new Date(),
+    profileImage: "profile1.png",
   },
 ];
