@@ -2,22 +2,28 @@ export default [
   {
     id: 1,
 
-    userId: 1,
+    userName: "テストユーザー",
 
-    title: "サンプルTODO",
+    email: "test@test.com",
 
-    hasDeadline: true,
+    password: "1234",
 
-    deadline: new Date(),
+    friends: [],
 
-    repeat: false,
+    friendCount: 0,
 
-    repeatType: null,
+    loginDays: 0,
 
-    progress: 0,
+    totalTodoCount: 0,
 
-    completed: false,
+    createdAt: "2026-07-21",
 
-    createdAt: new Date(),
+    isLogin: false,
+
+    notification: true,
+
+    profileImage: "profile1.png",
+
+    lastLogin: null,
   },
 ];
