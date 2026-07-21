@@ -31,5 +31,38 @@ export const useUserStore = defineStore("user", {
 
       this.currentUser = null;
     },
+    register(userName, email, password) {
+      const exists = users.some((user) => user.email === email);
+
+      if (exists) {
+        return false;
+      }
+
+      users.push({
+        id: users.length + 1,
+
+        userName,
+
+        email,
+
+        password,
+
+        friendIds: [],
+
+        friendCount: 0,
+
+        loginDays: 0,
+
+        totalTodoCount: 0,
+
+        createdAt: new Date().toISOString(),
+
+        isLoggedIn: false,
+
+        profileImage: "profile1.png",
+      });
+
+      return true;
+    },
   },
 });
