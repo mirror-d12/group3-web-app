@@ -64,5 +64,19 @@ export const useUserStore = defineStore("user", {
 
       return true;
     },
+    findUserByEmail(email) {
+      return users.find((user) => user.email === email);
+    },
+    changePassword(email, newPassword) {
+      const user = users.find((user) => user.email === email);
+
+      if (!user) {
+        return false;
+      }
+
+      user.password = newPassword;
+
+      return true;
+    },
   },
 });

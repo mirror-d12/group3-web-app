@@ -25,10 +25,12 @@ const routes = [
   },
   {
     path: "/password-reset",
+    name: "PasswordReset",
     component: PasswordResetView,
   },
   {
     path: "/new-password",
+    name: "NewPassword",
     component: NewPasswordView,
   },
   {
