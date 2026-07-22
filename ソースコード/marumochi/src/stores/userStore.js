@@ -1,80 +1,156 @@
 import { defineStore } from "pinia";
+import { defaultUsers } from "../data/users";
 
-import { users } from "../data/users";
+const USERS_STORAGE_KEY = "todo-manager-users";
+const CURRENT_USER_STORAGE_KEY = "todo-manager-current-user";
+
+function loadUsers() {
+  const savedUsers = localStorage.getItem(USERS_STORAGE_KEY);
+
+  if (savedUsers) {
+    try {
+      return JSON.parse(savedUsers);
+    } catch (error) {
+      console.error("ユーザーデータの読み込みに失敗しました。", error);
+    }
+  }
+
+  return structuredClone(defaultUsers);
+}
+
+function loadCurrentUser(users) {
+  const savedUserId = localStorage.getItem(CURRENT_USER_STORAGE_KEY);
+
+  if (!savedUserId) {
+    return null;
+  }
+
+  const userId = Number(savedUserId);
+
+  return users.find((user) => user.id === userId) ?? null;
+}
 
 export const useUserStore = defineStore("user", {
-  state: () => ({
-    currentUser: null,
-  }),
+  state: () => {
+    const users = loadUsers();
+
+    return {
+      users,
+      currentUser: loadCurrentUser(users),
+    };
+  },
+
+  getters: {
+    isLoggedIn: (state) => state.currentUser !== null,
+  },
 
   actions: {
-    login(email, password) {
-      const user = users.find(
-        (user) => user.email === email && user.password === password,
+    saveUsers() {
+      localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(this.users));
+    },
+
+    login(email, password, keepLogin = false) {
+      const normalizedEmail = email.trim().toLowerCase();
+
+      const user = this.users.find(
+        (item) =>
+          item.email.toLowerCase() === normalizedEmail &&
+          item.password === password,
       );
 
       if (!user) {
         return false;
       }
 
-      user.isLoggedIn = true;
+      this.users.forEach((item) => {
+        item.isLoggedIn = item.id === user.id;
+      });
 
       this.currentUser = user;
+      this.saveUsers();
+
+      if (keepLogin) {
+        localStorage.setItem(CURRENT_USER_STORAGE_KEY, String(user.id));
+      } else {
+        localStorage.removeItem(CURRENT_USER_STORAGE_KEY);
+      }
 
       return true;
     },
 
     logout() {
       if (this.currentUser) {
-        this.currentUser.isLoggedIn = false;
+        const user = this.users.find((item) => item.id === this.currentUser.id);
+
+        if (user) {
+          user.isLoggedIn = false;
+        }
       }
 
       this.currentUser = null;
+
+      localStorage.removeItem(CURRENT_USER_STORAGE_KEY);
+
+      this.saveUsers();
     },
+
     register(userName, email, password) {
-      const exists = users.some((user) => user.email === email);
+      const normalizedEmail = email.trim().toLowerCase();
+
+      const exists = this.users.some(
+        (user) => user.email.toLowerCase() === normalizedEmail,
+      );
 
       if (exists) {
         return false;
       }
 
-      users.push({
-        id: users.length + 1,
+      const nextId =
+        this.users.length === 0
+          ? 1
+          : Math.max(...this.users.map((user) => user.id)) + 1;
 
-        userName,
-
-        email,
-
+      this.users.push({
+        id: nextId,
+        userName: userName.trim(),
+        email: normalizedEmail,
         password,
-
         friendIds: [],
-
         friendCount: 0,
-
         loginDays: 0,
-
         totalTodoCount: 0,
-
         createdAt: new Date().toISOString(),
-
         isLoggedIn: false,
-
         profileImage: "profile1.png",
+        notificationEnabled: true,
+        lastHomeVisitDate: null,
       });
+
+      this.saveUsers();
 
       return true;
     },
+
     findUserByEmail(email) {
-      return users.find((user) => user.email === email);
+      const normalizedEmail = email.trim().toLowerCase();
+
+      return (
+        this.users.find(
+          (user) => user.email.toLowerCase() === normalizedEmail,
+        ) ?? null
+      );
     },
+
     changePassword(email, newPassword) {
-      const user = users.find((user) => user.email === email);
+      const user = this.findUserByEmail(email);
 
       if (!user) {
         return false;
       }
 
       user.password = newPassword;
+
+      this.saveUsers();
 
       return true;
     },

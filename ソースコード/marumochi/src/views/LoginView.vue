@@ -21,6 +21,17 @@
         <PasswordField v-model="password" label="パスワード" />
       </div>
 
+      <!-- ログイン状態を保持 -->
+      <label class="keep-login-area">
+        <input
+          v-model="keepLogin"
+          type="checkbox"
+          class="keep-login-checkbox"
+        />
+
+        <span>ログイン状態を保持</span>
+      </label>
+
       <!-- エラーメッセージ -->
       <p v-if="errorMessage" class="error-message">
         {{ errorMessage }}
@@ -64,6 +75,7 @@ const router = useRouter();
 // 入力値
 const email = ref("");
 const password = ref("");
+const keepLogin = ref(false);
 
 // エラーメッセージ
 const errorMessage = ref("");
@@ -84,15 +96,16 @@ function login() {
     return;
   }
 
-  const success = userStore.login(email.value, password.value);
+  const success = userStore.login(email.value, password.value, keepLogin.value);
 
-  if (success) {
-    errorMessage.value = "";
-
-    router.push("/home");
-  } else {
+  if (!success) {
     errorMessage.value = "メールアドレスまたはパスワードが違います。";
+    return;
   }
+
+  errorMessage.value = "";
+
+  router.push("/home");
 }
 </script>
 
@@ -214,6 +227,27 @@ function login() {
 
   .title {
     font-size: 28px;
+  }
+
+  .keep-login-area {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+
+    font-size: 14px;
+    color: #333;
+
+    cursor: pointer;
+  }
+
+  .keep-login-checkbox {
+    width: 18px;
+    height: 18px;
+
+    cursor: pointer;
   }
 }
 </style>
