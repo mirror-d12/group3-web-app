@@ -60,6 +60,13 @@ function next() {
     return;
   }
 
+  const emailPattern = /^[A-Za-z0-9._%+-]+@mwu\.jp$/;
+
+  if (!emailPattern.test(email.value.trim())) {
+    errorMessage.value = "メールアドレスは@mwu.jpの形式で入力してください。";
+    return;
+  }
+
   // メールアドレス存在確認
   const user = userStore.findUserByEmail(email.value);
 

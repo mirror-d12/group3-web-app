@@ -86,13 +86,26 @@ const errorMessage = ref("");
 function login() {
   if (!email.value.trim()) {
     errorMessage.value = "メールアドレスを入力してください。";
-
     return;
   }
 
-  if (!password.value.trim()) {
-    errorMessage.value = "パスワードを入力してください。";
+  const emailPattern = /^[A-Za-z0-9._%+-]+@mwu\.jp$/;
 
+  if (!emailPattern.test(email.value.trim())) {
+    errorMessage.value = "メールアドレスは@mwu.jpの形式で入力してください。";
+    return;
+  }
+
+  if (!password.value) {
+    errorMessage.value = "パスワードを入力してください。";
+    return;
+  }
+
+  const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
+
+  if (!passwordPattern.test(password.value)) {
+    errorMessage.value =
+      "パスワードは半角英数字8文字以上で、小文字・大文字・数字をそれぞれ1文字以上含めてください。";
     return;
   }
 

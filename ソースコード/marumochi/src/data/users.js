@@ -2,8 +2,8 @@ export const defaultUsers = [
   {
     id: 1,
     userName: "テストユーザー",
-    email: "test@example.com",
-    password: "password",
+    email: "test@mwu.jp",
+    password: "Password1",
     friendIds: [],
     friendCount: 0,
     loginDays: 0,

@@ -83,9 +83,24 @@ function register() {
     return;
   }
 
+  const emailPattern = /^[A-Za-z0-9._%+-]+@mwu\.jp$/;
+
+  if (!emailPattern.test(email.value.trim())) {
+    errorMessage.value = "メールアドレスは@mwu.jpの形式で入力してください。";
+    return;
+  }
+
   // パスワード
   if (!password.value.trim()) {
     errorMessage.value = "パスワードを入力してください。";
+    return;
+  }
+
+  const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
+
+  if (!passwordPattern.test(password.value)) {
+    errorMessage.value =
+      "パスワードは半角英数字8文字以上で、小文字・大文字・数字をそれぞれ1文字以上含めてください。";
     return;
   }
 
@@ -102,21 +117,22 @@ function register() {
   }
 
   // 新規登録
-  const success = userStore.register(
+  const result = userStore.register(
     userName.value,
     email.value,
     password.value,
   );
 
-  if (success) {
-    errorMessage.value = "";
-
-    alert("新規登録が完了しました。");
-
-    router.push("/login");
-  } else {
-    errorMessage.value = "このメールアドレスは既に登録されています。";
+  if (!result.success) {
+    errorMessage.value = result.message;
+    return;
   }
+
+  errorMessage.value = "";
+
+  alert("新規登録が完了しました。");
+
+  router.push("/login");
 }
 </script>
 

@@ -97,12 +97,34 @@ export const useUserStore = defineStore("user", {
     register(userName, email, password) {
       const normalizedEmail = email.trim().toLowerCase();
 
+      const emailPattern = /^[A-Za-z0-9._%+-]+@mwu\.jp$/;
+
+      const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
+
+      if (!emailPattern.test(normalizedEmail)) {
+        return {
+          success: false,
+          message: "メールアドレスは@mwu.jpの形式で入力してください。",
+        };
+      }
+
+      if (!passwordPattern.test(password)) {
+        return {
+          success: false,
+          message:
+            "パスワードは半角英数字8文字以上で、小文字・大文字・数字をそれぞれ1文字以上含めてください。",
+        };
+      }
+
       const exists = this.users.some(
         (user) => user.email.toLowerCase() === normalizedEmail,
       );
 
       if (exists) {
-        return false;
+        return {
+          success: false,
+          message: "このメールアドレスは既に登録されています。",
+        };
       }
 
       const nextId =
@@ -128,7 +150,10 @@ export const useUserStore = defineStore("user", {
 
       this.saveUsers();
 
-      return true;
+      return {
+        success: true,
+        message: "",
+      };
     },
 
     findUserByEmail(email) {
@@ -142,17 +167,33 @@ export const useUserStore = defineStore("user", {
     },
 
     changePassword(email, newPassword) {
+      const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
+
+      if (!passwordPattern.test(newPassword)) {
+        return {
+          success: false,
+          message:
+            "パスワードは半角英数字8文字以上で、小文字・大文字・数字をそれぞれ1文字以上含めてください。",
+        };
+      }
+
       const user = this.findUserByEmail(email);
 
       if (!user) {
-        return false;
+        return {
+          success: false,
+          message: "ユーザーが見つかりませんでした。",
+        };
       }
 
       user.password = newPassword;
 
       this.saveUsers();
 
-      return true;
+      return {
+        success: true,
+        message: "",
+      };
     },
   },
 });

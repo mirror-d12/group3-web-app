@@ -70,6 +70,14 @@ function updatePassword() {
     return;
   }
 
+  const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
+
+  if (!passwordPattern.test(password.value)) {
+    errorMessage.value =
+      "パスワードは半角英数字8文字以上で、小文字・大文字・数字をそれぞれ1文字以上含めてください。";
+    return;
+  }
+
   // 確認用パスワード未入力
   if (!confirmPassword.value.trim()) {
     errorMessage.value = "確認用パスワードを入力してください。";
@@ -92,17 +100,18 @@ function updatePassword() {
   }
 
   // パスワード更新
-  const success = userStore.changePassword(email, password.value);
+  const result = userStore.changePassword(email, password.value);
 
-  if (success) {
-    errorMessage.value = "";
-
-    alert("パスワードを変更しました。");
-
-    router.push("/login");
-  } else {
-    errorMessage.value = "パスワードの変更に失敗しました。";
+  if (!result.success) {
+    errorMessage.value = result.message;
+    return;
   }
+
+  errorMessage.value = "";
+
+  alert("パスワードを変更しました。");
+
+  router.push("/login");
 }
 </script>
 <style scoped>
