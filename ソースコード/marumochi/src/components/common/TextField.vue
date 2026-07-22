@@ -8,9 +8,19 @@
 </template>
 
 <script setup>
-const model = defineModel();
-
 defineProps({
-  label: String,
+  label: {
+    type: String,
+    default: "",
+  },
 });
+
+const model = defineModel();
 </script>
+
+<style scoped>
+/* Vuetifyの入力エリア内部を強制的に白にする */
+:deep(.v-field) {
+  background-color: #ffffff !important;
+}
+</style>
