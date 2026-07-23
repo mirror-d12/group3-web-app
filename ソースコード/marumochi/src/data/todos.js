@@ -1,7 +1,7 @@
 const now = new Date();
 
 /**
- * 基準日時から指定した時間を加算した日時を返します。
+ * 基準日時から指定した時間だけ進めた日時を返します。
  *
  * @param {Date} baseDate 基準日時
  * @param {number} hours 加算する時間
@@ -15,7 +15,7 @@ function addHours(baseDate, hours) {
 }
 
 /**
- * 基準日時から指定した日数を加算した日時を返します。
+ * 基準日時から指定した日数だけ進めた日時を返します。
  *
  * @param {Date} baseDate 基準日時
  * @param {number} days 加算する日数
@@ -31,27 +31,30 @@ function addDays(baseDate, days) {
 /**
  * TODOの初期ダミーデータです。
  *
- * 期限あり・期限なしの切り替え、締切順ソート、
- * 期限切れ表示、達成済みTODOの削除を確認できます。
+ * 確認できる機能
+ * ・期限あり／期限なしの切り替え
+ * ・締切順ソート
+ * ・期限切れ表示
+ * ・達成率100%のTODO削除
+ * ・繰り返しTODO
  */
 export const defaultTodos = [
   {
-    id: 1,
-    userId: 1,
+    id: 1, //TODOの識別番号
+    userId: 1, //所有ユーザーのID
 
-    title: "English Centralを100%にする",
+    title: "English Centralを100%にする", //TODO名
 
-    hasDeadline: true,
-    deadlineAt: addDays(now, 1),
+    hasDeadline: true, //期限あり/なし
+    deadlineAt: addDays(now, 1), //実際の期限日時
 
-    repeatEnabled: false,
-    repeatType: null,
+    repeatEnabled: false, //繰り返しON/OFF
+    repeatType: null, //hourly・daily・weekly・monthly・null
 
-    progress: 65,
-    completed: false,
-    completedAt: null,
+    progress: 65, //達成率（0~100）
 
-    createdAt: now.toISOString(),
+    createdAt: now.toISOString(), //作成日時
+    updatedAt: now.toISOString(), //最終更新日時
   },
 
   {
@@ -67,10 +70,9 @@ export const defaultTodos = [
     repeatType: null,
 
     progress: 30,
-    completed: false,
-    completedAt: null,
 
     createdAt: now.toISOString(),
+    updatedAt: now.toISOString(),
   },
 
   {
@@ -86,10 +88,9 @@ export const defaultTodos = [
     repeatType: "weekly",
 
     progress: 0,
-    completed: false,
-    completedAt: null,
 
     createdAt: now.toISOString(),
+    updatedAt: now.toISOString(),
   },
 
   {
@@ -105,10 +106,9 @@ export const defaultTodos = [
     repeatType: null,
 
     progress: 40,
-    completed: false,
-    completedAt: null,
 
     createdAt: addDays(now, -2),
+    updatedAt: now.toISOString(),
   },
 
   {
@@ -124,10 +124,9 @@ export const defaultTodos = [
     repeatType: null,
 
     progress: 20,
-    completed: false,
-    completedAt: null,
 
     createdAt: now.toISOString(),
+    updatedAt: now.toISOString(),
   },
 
   {
@@ -143,9 +142,8 @@ export const defaultTodos = [
     repeatType: null,
 
     progress: 100,
-    completed: true,
-    completedAt: now.toISOString(),
 
     createdAt: addDays(now, -1),
+    updatedAt: now.toISOString(),
   },
 ];
