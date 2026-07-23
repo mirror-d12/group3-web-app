@@ -24,6 +24,11 @@
         <AddTodoButton v-if="!isAdding" @click="openAddForm" />
       </div>
 
+      <!-- 並び順の説明 -->
+      <p class="sort-message">
+        {{ sortMessage }}
+      </p>
+
       <!-- TODO追加フォーム -->
       <div v-if="isAdding" class="add-form-area">
         <TodoForm
@@ -34,7 +39,7 @@
         />
       </div>
 
-      <!-- TODOリスト -->
+      <!-- TODO一覧 -->
       <TodoList
         :todos="displayedTodos"
         @delete="deleteTodo"
@@ -57,19 +62,18 @@ import AddTodoButton from "../components/todo/AddTodoButton.vue";
 
 const todoStore = useTodoStore();
 
-/*
- * 画面を開いたときは
- * 「期限あり」を選択状態にします。
+/**
+ * 初期表示は期限ありTODOです。
  */
 const selectedType = ref("deadline");
 
-/*
+/**
  * TODO追加フォームを
- * 開いているかどうかを管理します。
+ * 開いているかどうかです。
  */
 const isAdding = ref(false);
 
-/*
+/**
  * 選択中の種類に応じて
  * 表示するTODO一覧を切り替えます。
  */
@@ -81,7 +85,7 @@ const displayedTodos = computed(() => {
   return todoStore.currentUserNoDeadlineTodos;
 });
 
-/*
+/**
  * 一覧タイトルを切り替えます。
  */
 const selectedTypeLabel = computed(() => {
@@ -90,30 +94,38 @@ const selectedTypeLabel = computed(() => {
     : "期限なしのTODO";
 });
 
-/*
- * 期限あり・期限なしを
- * 切り替えたときは
- * 追加フォームを閉じます。
+/**
+ * 並び順の説明を切り替えます。
+ */
+const sortMessage = computed(() => {
+  return selectedType.value === "deadline"
+    ? "期限が近い順に表示しています。"
+    : "優先度が高い順に表示しています。";
+});
+
+/**
+ * 期限あり・期限なしを切り替えたら、
+ * 開いている追加フォームを閉じます。
  */
 watch(selectedType, () => {
   isAdding.value = false;
 });
 
-/*
+/**
  * TODO追加フォームを開きます。
  */
 function openAddForm() {
   isAdding.value = true;
 }
 
-/*
+/**
  * TODO追加フォームを閉じます。
  */
 function closeAddForm() {
   isAdding.value = false;
 }
 
-/*
+/**
  * 新しいTODOを追加します。
  */
 function addTodo(todoData) {
@@ -130,8 +142,8 @@ function addTodo(todoData) {
   }
 }
 
-/*
- * TODO名・期限・繰り返し設定を
+/**
+ * TODO名・期限・繰り返し・優先度を
  * 更新します。
  */
 function updateTodo(payload) {
@@ -150,8 +162,8 @@ function updateTodo(payload) {
   }
 }
 
-/*
- * TODOの達成率を更新します。
+/**
+ * 達成率を更新します。
  */
 function updateProgress(payload) {
   try {
@@ -169,7 +181,7 @@ function updateProgress(payload) {
   }
 }
 
-/*
+/**
  * TODOを削除します。
  */
 function deleteTodo(todoId) {
@@ -229,17 +241,15 @@ function deleteTodo(todoId) {
   background-color: #222222;
 }
 
-/* TODO一覧全体 */
 .list-area {
   margin-top: 30px;
 }
 
-/* 一覧タイトルと追加ボタン */
 .list-heading {
   width: 100%;
   min-height: 58px;
 
-  margin-bottom: 16px;
+  margin-bottom: 6px;
 
   display: flex;
   justify-content: space-between;
@@ -248,7 +258,6 @@ function deleteTodo(todoId) {
   gap: 16px;
 }
 
-/* タイトルと件数を横並びにする */
 .list-heading__left {
   min-width: 0;
 
@@ -259,7 +268,6 @@ function deleteTodo(todoId) {
   gap: 14px;
 }
 
-/* 期限ありのTODO・期限なしのTODO */
 .list-title {
   margin: 0;
 
@@ -271,7 +279,6 @@ function deleteTodo(todoId) {
   white-space: nowrap;
 }
 
-/* ○件表示 */
 .todo-count {
   min-width: 58px;
 
@@ -290,7 +297,14 @@ function deleteTodo(todoId) {
   box-sizing: border-box;
 }
 
-/* 追加フォーム */
+.sort-message {
+  margin: 0 0 18px;
+
+  color: #666666;
+  font-size: 14px;
+  font-weight: 600;
+}
+
 .add-form-area {
   width: 100%;
 
@@ -333,6 +347,12 @@ function deleteTodo(todoId) {
     padding: 4px 7px;
 
     font-size: 12px;
+  }
+
+  .sort-message {
+    margin-bottom: 14px;
+
+    font-size: 13px;
   }
 
   .add-form-area {

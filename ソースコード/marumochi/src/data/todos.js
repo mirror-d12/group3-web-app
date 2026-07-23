@@ -9,6 +9,7 @@ const now = new Date();
  */
 function addHours(baseDate, hours) {
   const date = new Date(baseDate);
+
   date.setHours(date.getHours() + hours);
 
   return date.toISOString();
@@ -23,38 +24,52 @@ function addHours(baseDate, hours) {
  */
 function addDays(baseDate, days) {
   const date = new Date(baseDate);
+
   date.setDate(date.getDate() + days);
 
   return date.toISOString();
 }
 
 /**
+ * 基準日時から指定した週数だけ進めた日時を返します。
+ *
+ * @param {Date} baseDate 基準日時
+ * @param {number} weeks 加算する週数
+ * @returns {string} ISO形式の日時
+ */
+function addWeeks(baseDate, weeks) {
+  return addDays(baseDate, weeks * 7);
+}
+
+/**
  * TODOの初期ダミーデータです。
  *
- * 確認できる機能
- * ・期限あり／期限なしの切り替え
- * ・締切順ソート
- * ・期限切れ表示
- * ・達成率100%のTODO削除
- * ・繰り返しTODO
+ * priorityは期限なしTODOだけに設定します。
+ *
+ * high   ：高
+ * medium ：中
+ * low    ：低
  */
 export const defaultTodos = [
   {
-    id: 1, //TODOの識別番号
-    userId: 1, //所有ユーザーのID
+    id: 1,
+    userId: 1,
 
-    title: "English Centralを100%にする", //TODO名
+    title: "English Centralを100%にする",
 
-    hasDeadline: true, //期限あり/なし
-    deadlineAt: addDays(now, 1), //実際の期限日時
+    hasDeadline: true,
+    deadlineAt: addDays(now, 1),
 
-    repeatEnabled: false, //繰り返しON/OFF
-    repeatType: null, //hourly・daily・weekly・monthly・null
+    repeatEnabled: false,
+    repeatType: null,
 
-    progress: 65, //達成率（0~100）
+    priority: null,
 
-    createdAt: now.toISOString(), //作成日時
-    updatedAt: now.toISOString(), //最終更新日時
+    progress: 65,
+
+    createdAt: now.toISOString(),
+
+    updatedAt: now.toISOString(),
   },
 
   {
@@ -69,9 +84,12 @@ export const defaultTodos = [
     repeatEnabled: false,
     repeatType: null,
 
+    priority: null,
+
     progress: 30,
 
     createdAt: now.toISOString(),
+
     updatedAt: now.toISOString(),
   },
 
@@ -82,14 +100,17 @@ export const defaultTodos = [
     title: "プレゼンテーション資料を完成させる",
 
     hasDeadline: true,
-    deadlineAt: addDays(now, 7),
+    deadlineAt: addWeeks(now, 1),
 
     repeatEnabled: true,
     repeatType: "weekly",
 
+    priority: null,
+
     progress: 0,
 
     createdAt: now.toISOString(),
+
     updatedAt: now.toISOString(),
   },
 
@@ -105,9 +126,12 @@ export const defaultTodos = [
     repeatEnabled: false,
     repeatType: null,
 
+    priority: null,
+
     progress: 40,
 
     createdAt: addDays(now, -2),
+
     updatedAt: now.toISOString(),
   },
 
@@ -123,9 +147,12 @@ export const defaultTodos = [
     repeatEnabled: false,
     repeatType: null,
 
+    priority: "high",
+
     progress: 20,
 
     createdAt: now.toISOString(),
+
     updatedAt: now.toISOString(),
   },
 
@@ -141,9 +168,54 @@ export const defaultTodos = [
     repeatEnabled: false,
     repeatType: null,
 
+    priority: "medium",
+
     progress: 100,
 
     createdAt: addDays(now, -1),
+
+    updatedAt: now.toISOString(),
+  },
+
+  {
+    id: 7,
+    userId: 1,
+
+    title: "部屋を整理する",
+
+    hasDeadline: false,
+    deadlineAt: null,
+
+    repeatEnabled: false,
+    repeatType: null,
+
+    priority: "low",
+
+    progress: 10,
+
+    createdAt: addDays(now, -2),
+
+    updatedAt: now.toISOString(),
+  },
+
+  {
+    id: 8,
+    userId: 1,
+
+    title: "卒業制作のアイデアを整理する",
+
+    hasDeadline: false,
+    deadlineAt: null,
+
+    repeatEnabled: false,
+    repeatType: null,
+
+    priority: "high",
+
+    progress: 45,
+
+    createdAt: addHours(now, -3),
+
     updatedAt: now.toISOString(),
   },
 ];

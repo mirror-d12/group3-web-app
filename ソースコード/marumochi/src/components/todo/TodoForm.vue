@@ -18,7 +18,7 @@
       />
     </div>
 
-    <!-- 期限ありTODOの場合のみ表示 -->
+    <!-- 期限ありTODO -->
     <template v-if="hasDeadline">
       <!-- 期限 -->
       <div class="form-group">
@@ -39,7 +39,7 @@
         </p>
       </div>
 
-      <!-- 繰り返しON／OFF -->
+      <!-- 繰り返し -->
       <div class="form-group">
         <div class="repeat-header">
           <span class="form-label repeat-label"> 繰り返し </span>
@@ -72,7 +72,7 @@
         </div>
       </div>
 
-      <!-- 繰り返しONの場合のみ表示 -->
+      <!-- 繰り返しONの場合のみ -->
       <div v-if="repeatEnabled" class="form-group">
         <label :for="repeatInputId" class="form-label"> 繰り返し間隔 </label>
 
@@ -90,7 +90,30 @@
       </div>
     </template>
 
-    <!-- エラーメッセージ -->
+    <!-- 期限なしTODO -->
+    <template v-else>
+      <div class="form-group">
+        <label :for="priorityInputId" class="form-label"> 優先度 </label>
+
+        <select
+          :id="priorityInputId"
+          v-model="priority"
+          class="form-input form-select"
+        >
+          <option value="high">高</option>
+
+          <option value="medium">中</option>
+
+          <option value="low">低</option>
+        </select>
+
+        <p class="priority-help">
+          期限なしTODOは、優先度が高い順に表示されます。
+        </p>
+      </div>
+    </template>
+
+    <!-- エラー -->
     <p v-if="errorMessage" class="error-message">
       {{ errorMessage }}
     </p>
@@ -143,6 +166,8 @@ const deadline = ref("");
 const repeatEnabled = ref(false);
 const repeatType = ref("daily");
 
+const priority = ref("medium");
+
 const errorMessage = ref("");
 
 const titleInputId = computed(() => `todo-title-${props.mode}`);
@@ -151,9 +176,10 @@ const deadlineInputId = computed(() => `todo-deadline-${props.mode}`);
 
 const repeatInputId = computed(() => `todo-repeat-${props.mode}`);
 
+const priorityInputId = computed(() => `todo-priority-${props.mode}`);
+
 /**
- * ISO形式の日時を
- * datetime-localで使用できる形式へ変換します。
+ * ISO形式をdatetime-local用の形式へ変換します。
  */
 function toDateTimeLocalValue(isoDate) {
   if (!isoDate) {
@@ -174,8 +200,7 @@ function toDateTimeLocalValue(isoDate) {
 }
 
 /**
- * 追加時の初期期限を
- * 現在日時の1日後にします。
+ * 追加時の初期期限を現在日時の1日後にします。
  */
 function createDefaultDeadline() {
   const date = new Date();
@@ -186,8 +211,7 @@ function createDefaultDeadline() {
 }
 
 /**
- * 編集対象のTODOまたは初期値を
- * フォームへ設定します。
+ * フォームを初期化します。
  */
 function resetForm() {
   title.value = props.initialTodo?.title ?? "";
@@ -209,6 +233,12 @@ function resetForm() {
     ? initialRepeatType
     : "daily";
 
+  const initialPriority = props.initialTodo?.priority;
+
+  priority.value = ["high", "medium", "low"].includes(initialPriority)
+    ? initialPriority
+    : "medium";
+
   errorMessage.value = "";
 }
 
@@ -228,13 +258,17 @@ const formattedDeadlinePreview = computed(() => {
     return "";
   }
 
-  return new Intl.DateTimeFormat("ja-JP", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
+  const year = date.getFullYear();
+
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+
+  const day = String(date.getDate()).padStart(2, "0");
+
+  const hour = String(date.getHours()).padStart(2, "0");
+
+  const minute = String(date.getMinutes()).padStart(2, "0");
+
+  return `${year}年/${month}月/` + `${day}日 ${hour}:${minute}`;
 });
 
 function turnRepeatOff() {
@@ -283,6 +317,14 @@ function submitForm() {
     }
   }
 
+  if (
+    !props.hasDeadline &&
+    !["high", "medium", "low"].includes(priority.value)
+  ) {
+    errorMessage.value = "優先度を選択してください。";
+    return;
+  }
+
   const todoData = {
     title: trimmedTitle,
 
@@ -294,6 +336,8 @@ function submitForm() {
 
     repeatType:
       props.hasDeadline && repeatEnabled.value ? repeatType.value : null,
+
+    priority: props.hasDeadline ? null : priority.value,
   };
 
   if (props.mode === "add") {
@@ -438,6 +482,14 @@ function cancelForm() {
   color: #ffffff;
 
   box-shadow: 0 2px 5px rgba(18, 169, 26, 0.35);
+}
+
+.priority-help {
+  margin: 9px 0 0;
+
+  color: #666666;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 .error-message {

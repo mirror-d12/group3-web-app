@@ -15,7 +15,7 @@
             aria-label="TODOを編集"
             @click="startEditing"
           >
-            <img :src="editIcon" alt="編集" class="edit-icon" />
+            <img :src="editIcon" alt="" class="edit-icon" />
           </button>
 
           <!-- 削除 -->
@@ -25,31 +25,44 @@
             aria-label="TODOを削除"
             @click="requestDelete"
           >
-            <img :src="deleteIcon" alt="削除" class="delete-icon" />
+            <img :src="deleteIcon" alt="" class="delete-icon" />
           </button>
         </div>
       </div>
 
-      <!-- 期限 -->
-      <div v-if="todo.hasDeadline" class="todo-detail">
-        <span class="detail-label"> 期限： </span>
+      <!-- 期限ありTODO -->
+      <template v-if="todo.hasDeadline">
+        <div class="todo-detail">
+          <span class="detail-label"> 期限： </span>
 
-        <span class="deadline-text">
-          {{ formattedDeadline }}
-        </span>
-      </div>
+          <span class="deadline-text">
+            {{ formattedDeadline }}
+          </span>
+        </div>
 
-      <!-- 繰り返し -->
-      <div v-if="todo.hasDeadline" class="todo-detail">
-        <span class="detail-label"> 繰り返し： </span>
+        <div class="todo-detail">
+          <span class="detail-label"> 繰り返し： </span>
+
+          <span
+            :class="{
+              'repeat-enabled': hasRepeat,
+              'repeat-disabled': !hasRepeat,
+            }"
+          >
+            {{ repeatLabel }}
+          </span>
+        </div>
+      </template>
+
+      <!-- 期限なしTODO -->
+      <div v-else class="todo-detail">
+        <span class="detail-label"> 優先度： </span>
 
         <span
-          :class="{
-            'repeat-enabled': hasRepeat,
-            'repeat-disabled': !hasRepeat,
-          }"
+          class="priority-text"
+          :class="`priority-text--${normalizedPriority}`"
         >
-          {{ repeatLabel }}
+          {{ priorityLabel }}
         </span>
       </div>
 
@@ -66,7 +79,7 @@
           @update:progress="updateProgress"
         />
 
-        <p v-if="todo.progress === 100" class="completed-message">達成済み</p>
+        <p v-if="isCompleted" class="completed-message">達成済み</p>
       </div>
     </template>
 
@@ -89,7 +102,10 @@ import { computed, ref } from "vue";
 import ProgressBar from "../common/ProgressBar.vue";
 import TodoForm from "./TodoForm.vue";
 
-import todoBackground from "../../images/todo_background.png";
+import limitTodoBackground from "../../images/LimitTodo_background.png";
+import noLimitTodoBackground from "../../images/NolimitTodo_background.png";
+import doneTodoBackground from "../../images/DoneTodo_background.png";
+
 import deleteIcon from "../../images/delete_todo.png";
 import editIcon from "../../images/name_setting.png";
 
@@ -104,10 +120,42 @@ const emit = defineEmits(["delete", "update", "update-progress"]);
 
 const isEditing = ref(false);
 
-const cardBackgroundStyle = computed(() => ({
-  backgroundImage: `url(${todoBackground})`,
-}));
+/**
+ * 達成済みかどうかを判定します。
+ */
+const isCompleted = computed(() => {
+  return Number(props.todo.progress) === 100;
+});
 
+/**
+ * TODOの種類に応じて背景画像を切り替えます。
+ *
+ * 優先順位：
+ * 1. 達成済み
+ * 2. 期限あり
+ * 3. 期限なし
+ */
+const cardBackgroundStyle = computed(() => {
+  if (isCompleted.value) {
+    return {
+      backgroundImage: `url(${doneTodoBackground})`,
+    };
+  }
+
+  if (props.todo.hasDeadline) {
+    return {
+      backgroundImage: `url(${limitTodoBackground})`,
+    };
+  }
+
+  return {
+    backgroundImage: `url(${noLimitTodoBackground})`,
+  };
+});
+
+/**
+ * 期限表示を作成します。
+ */
 const formattedDeadline = computed(() => {
   if (!props.todo.hasDeadline || !props.todo.deadlineAt) {
     return "";
@@ -137,24 +185,39 @@ const formattedDeadline = computed(() => {
     (remainingMilliseconds % millisecondsPerDay) / millisecondsPerHour,
   );
 
-  const formattedDate = new Intl.DateTimeFormat("ja-JP", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  }).format(deadline);
+  const year = deadline.getFullYear();
+
+  const month = String(deadline.getMonth() + 1).padStart(2, "0");
+
+  const day = String(deadline.getDate()).padStart(2, "0");
+
+  const hour = String(deadline.getHours()).padStart(2, "0");
+
+  const minute = String(deadline.getMinutes()).padStart(2, "0");
+
+  const formattedDate = `${year}年/${month}月/` + `${day}日 ${hour}:${minute}`;
 
   if (remainingDays > 0) {
-    return `あと${remainingDays}日${remainingHours}時間（${formattedDate}）`;
+    return (
+      `あと${remainingDays}日` +
+      `${remainingHours}時間` +
+      `（${formattedDate}）`
+    );
   }
 
-  return `あと${remainingHours}時間（${formattedDate}）`;
+  return `あと${remainingHours}時間` + `（${formattedDate}）`;
 });
 
-const hasRepeat = computed(() => Boolean(props.todo.repeatEnabled));
+/**
+ * 繰り返し設定の有無
+ */
+const hasRepeat = computed(() => {
+  return Boolean(props.todo.repeatEnabled);
+});
 
+/**
+ * 繰り返し表示
+ */
 const repeatLabel = computed(() => {
   if (!hasRepeat.value) {
     return "なし";
@@ -167,6 +230,32 @@ const repeatLabel = computed(() => {
   };
 
   return labels[props.todo.repeatType] ?? "なし";
+});
+
+/**
+ * 優先度の保存値を安全な値へ整えます。
+ */
+const normalizedPriority = computed(() => {
+  const priority = props.todo.priority;
+
+  if (["high", "medium", "low"].includes(priority)) {
+    return priority;
+  }
+
+  return "medium";
+});
+
+/**
+ * 優先度の日本語表示
+ */
+const priorityLabel = computed(() => {
+  const labels = {
+    high: "高",
+    medium: "中",
+    low: "低",
+  };
+
+  return labels[normalizedPriority.value] ?? "中";
 });
 
 function startEditing() {
@@ -261,19 +350,26 @@ function updateProgress(progress) {
 
   cursor: pointer;
 
-  transition: background-color 0.2s;
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
 }
 
 .edit-button:hover {
   background-color: rgba(255, 255, 255, 0.55);
+
+  transform: translateY(-1px);
 }
 
 .delete-button:hover {
-  background-color: rgba(255, 235, 238, 0.7);
+  background-color: rgba(255, 235, 238, 0.75);
+
+  transform: translateY(-1px);
 }
 
 .icon-button:focus-visible {
   outline: 3px solid rgba(21, 151, 229, 0.3);
+
   outline-offset: 2px;
 }
 
@@ -320,6 +416,28 @@ function updateProgress(progress) {
 .repeat-disabled {
   color: #000000;
   font-size: 20px;
+  font-weight: 400;
+}
+
+/* 優先度共通 */
+.priority-text {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+/* 優先度：高 */
+.priority-text--high {
+  color: #e40303;
+}
+
+/* 優先度：中 */
+.priority-text--medium {
+  color: #ffaa00;
+}
+
+/* 優先度：低 */
+.priority-text--low {
+  color: #12a91a;
 }
 
 .progress-area {
@@ -365,7 +483,8 @@ function updateProgress(progress) {
   .detail-label,
   .deadline-text,
   .repeat-enabled,
-  .repeat-disabled {
+  .repeat-disabled,
+  .priority-text {
     font-size: 17px;
   }
 
