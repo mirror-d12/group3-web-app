@@ -1,1 +1,3 @@
-<template><v-btn>テスト</v-btn>;</template>
+<template>
+  <div>Login View</div>
+</template>
