@@ -6,7 +6,7 @@
         type="range"
         min="0"
         max="100"
-        step="10"
+        step="1"
         :value="normalizedProgress"
         :style="sliderStyle"
         :aria-label="ariaLabel"
@@ -77,7 +77,7 @@ function changeProgress(event) {
   width: 100%;
 
   display: grid;
-  grid-template-columns: 1fr 58px;
+  grid-template-columns: minmax(0, 1fr) 54px;
   align-items: center;
 
   gap: 12px;
@@ -97,6 +97,7 @@ function changeProgress(event) {
 
   margin: 0;
 
+  border: none;
   border-radius: 10px;
 
   appearance: none;
@@ -110,6 +111,12 @@ function changeProgress(event) {
   cursor: default;
 }
 
+.progress-slider:focus-visible {
+  outline: 3px solid rgba(255, 170, 0, 0.35);
+  outline-offset: 4px;
+}
+
+/* Chrome・Edge・Safari */
 .progress-slider::-webkit-slider-runnable-track {
   width: 100%;
   height: 20px;
@@ -142,13 +149,23 @@ function changeProgress(event) {
   cursor: grabbing;
 }
 
+/* Firefox */
 .progress-slider::-moz-range-track {
   width: 100%;
   height: 20px;
 
+  border: none;
   border-radius: 10px;
 
   background: transparent;
+}
+
+.progress-slider::-moz-range-progress {
+  height: 20px;
+
+  border-radius: 10px;
+
+  background-color: transparent;
 }
 
 .progress-slider::-moz-range-thumb {
@@ -168,20 +185,24 @@ function changeProgress(event) {
 .progress-value {
   min-width: 50px;
 
-  color: #000000;
+  padding: 0;
 
+  border: none;
+  background: transparent;
+
+  color: #000000;
   font-size: 18px;
   font-weight: 700;
+  line-height: 1;
   text-align: right;
 
-  background: transparent;
-  border: none;
-  padding: 0;
+  box-sizing: border-box;
 }
 
 @media (max-width: 600px) {
   .progress-control {
-    grid-template-columns: 1fr 52px;
+    grid-template-columns: minmax(0, 1fr) 46px;
+
     gap: 8px;
   }
 
@@ -196,6 +217,11 @@ function changeProgress(event) {
     height: 22px;
 
     margin-top: -1px;
+  }
+
+  .progress-slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
   }
 }
 </style>
