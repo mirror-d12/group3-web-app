@@ -8,6 +8,7 @@
         </h2>
 
         <div class="header-buttons">
+          <!-- 編集 -->
           <button
             type="button"
             class="icon-button edit-button"
@@ -17,6 +18,7 @@
             <img :src="editIcon" alt="" class="edit-icon" />
           </button>
 
+          <!-- 削除 -->
           <button
             type="button"
             class="icon-button delete-button"
@@ -28,6 +30,7 @@
         </div>
       </div>
 
+      <!-- 期限 -->
       <div v-if="todo.hasDeadline" class="todo-detail">
         <span class="detail-label"> 期限： </span>
 
@@ -36,6 +39,7 @@
         </span>
       </div>
 
+      <!-- 繰り返し -->
       <div v-if="todo.hasDeadline" class="todo-detail">
         <span class="detail-label"> 繰り返し： </span>
 
@@ -49,18 +53,24 @@
         </span>
       </div>
 
+      <!-- 達成率 -->
       <div class="progress-area">
         <div class="progress-header">
           <span class="detail-label"> 達成率 </span>
-
-          <span class="progress-value"> {{ todo.progress }}% </span>
         </div>
 
-        <ProgressBar :progress="todo.progress" />
+        <ProgressBar
+          :progress="todo.progress"
+          editable
+          :aria-label="`${todo.title}の達成率`"
+          @update:progress="updateProgress"
+        />
+
+        <p v-if="todo.progress === 100" class="completed-message">達成済み</p>
       </div>
     </template>
 
-    <!-- 共通編集フォーム -->
+    <!-- 編集フォーム -->
     <template v-else>
       <TodoForm
         mode="edit"
@@ -90,7 +100,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["delete", "update"]);
+const emit = defineEmits(["delete", "update", "update-progress"]);
 
 const isEditing = ref(false);
 
@@ -154,14 +164,21 @@ function saveEditing(todoData) {
 function requestDelete() {
   emit("delete", props.todo.id);
 }
+
+function updateProgress(progress) {
+  emit("update-progress", {
+    id: props.todo.id,
+    progress,
+  });
+}
 </script>
 
 <style scoped>
 .todo-card {
   width: 100%;
-  min-height: 210px;
+  min-height: 230px;
 
-  padding: 42px 24px 22px;
+  padding: 42px 24px 24px;
 
   background-repeat: no-repeat;
   background-position: center;
@@ -228,6 +245,12 @@ function requestDelete() {
   background-color: rgba(255, 235, 238, 0.7);
 }
 
+.icon-button:focus-visible {
+  outline: 3px solid rgba(21, 151, 229, 0.3);
+
+  outline-offset: 2px;
+}
+
 .edit-icon {
   width: 27px;
   height: 27px;
@@ -286,17 +309,26 @@ function requestDelete() {
   align-items: center;
 }
 
-.progress-value {
-  color: #c95a00;
-  font-size: 20px;
+.completed-message {
+  width: fit-content;
+
+  margin: 12px auto 0;
+
+  padding: 5px 16px;
+
+  background-color: #12a91a;
+  border-radius: 16px;
+
+  color: #ffffff;
+  font-size: 15px;
   font-weight: 700;
 }
 
 @media (max-width: 600px) {
   .todo-card {
-    min-height: 190px;
+    min-height: 210px;
 
-    padding: 38px 16px 18px;
+    padding: 38px 16px 20px;
   }
 
   .todo-title {
@@ -308,10 +340,6 @@ function requestDelete() {
   .deadline-text,
   .repeat-enabled,
   .repeat-disabled {
-    font-size: 17px;
-  }
-
-  .progress-value {
     font-size: 17px;
   }
 

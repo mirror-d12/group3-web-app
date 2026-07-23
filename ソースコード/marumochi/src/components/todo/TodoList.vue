@@ -13,6 +13,7 @@
         :todo="todo"
         @delete="handleDelete"
         @update="handleUpdate"
+        @update-progress="handleProgressUpdate"
       />
     </div>
   </section>
@@ -28,7 +29,7 @@ defineProps({
   },
 });
 
-const emit = defineEmits(["delete", "update"]);
+const emit = defineEmits(["delete", "update", "update-progress"]);
 
 function handleDelete(todoId) {
   emit("delete", todoId);
@@ -36,6 +37,10 @@ function handleDelete(todoId) {
 
 function handleUpdate(payload) {
   emit("update", payload);
+}
+
+function handleProgressUpdate(payload) {
+  emit("update-progress", payload);
 }
 </script>
 
@@ -75,7 +80,7 @@ function handleUpdate(payload) {
 
   color: #555555;
   font-size: 18px;
-  font-weight: bold;
+  font-weight: 700;
 }
 
 .empty-message__description {

@@ -8,9 +8,6 @@
 
     <TodoToggle v-model="selectedType" />
 
-    <!-- TODO追加 -->
-
-    <!-- TODO一覧 -->
     <section class="list-area">
       <div class="list-heading">
         <div class="list-heading__left">
@@ -24,6 +21,7 @@
         <AddTodoButton v-if="!isAdding" @click="openAddForm" />
       </div>
 
+      <!-- 追加フォーム -->
       <div v-if="isAdding" class="add-form-area">
         <TodoForm
           mode="add"
@@ -33,10 +31,12 @@
         />
       </div>
 
+      <!-- TODO一覧 -->
       <TodoList
         :todos="displayedTodos"
         @delete="deleteTodo"
         @update="updateTodo"
+        @update-progress="updateProgress"
       />
     </section>
   </main>
@@ -108,6 +108,20 @@ function updateTodo(payload) {
   }
 }
 
+function updateProgress(payload) {
+  try {
+    const success = todoStore.updateProgress(payload.id, payload.progress);
+
+    if (!success) {
+      window.alert("達成率を更新できませんでした。");
+    }
+  } catch (error) {
+    window.alert(
+      error instanceof Error ? error.message : "達成率を更新できませんでした。",
+    );
+  }
+}
+
 function deleteTodo(todoId) {
   const targetTodo = todoStore.getTodoById(todoId);
 
@@ -123,7 +137,11 @@ function deleteTodo(todoId) {
     return;
   }
 
-  todoStore.deleteTodo(todoId);
+  const success = todoStore.deleteTodo(todoId);
+
+  if (!success) {
+    window.alert("TODOを削除できませんでした。");
+  }
 }
 </script>
 
@@ -159,6 +177,10 @@ function deleteTodo(todoId) {
   background-color: #222222;
 }
 
+.list-area {
+  margin-top: 30px;
+}
+
 .list-heading {
   min-height: 58px;
   margin-bottom: 16px;
@@ -180,15 +202,6 @@ function deleteTodo(todoId) {
   gap: 14px;
 }
 
-.add-form-area {
-  width: 100%;
-  margin-bottom: 24px;
-}
-
-.list-area {
-  margin-top: 30px;
-}
-
 .list-title {
   margin: 0;
 
@@ -201,8 +214,8 @@ function deleteTodo(todoId) {
 }
 
 .todo-count {
-  flex-shrink: 0;
   min-width: 58px;
+  flex-shrink: 0;
 
   padding: 5px 13px;
 
@@ -217,6 +230,12 @@ function deleteTodo(todoId) {
   box-sizing: border-box;
 }
 
+.add-form-area {
+  width: 100%;
+
+  margin-bottom: 24px;
+}
+
 @media (max-width: 600px) {
   .todo-view {
     padding: 25px 14px 120px;
@@ -226,42 +245,33 @@ function deleteTodo(todoId) {
     font-size: 28px;
   }
 
-  .add-area {
-    margin-top: 22px;
-  }
-
   .list-area {
     margin-top: 24px;
   }
 
-  .list-title {
-    font-size: 21px;
-  }
-
-  .todo-count {
-    min-width: 45px;
-    padding: 4px 8px;
-    font-size: 13px;
-  }
-
   .list-heading {
-    align-items: flex-start;
-    gap: 10px;
+    align-items: center;
+
+    gap: 9px;
   }
 
   .list-heading__left {
     flex-direction: row;
     align-items: center;
-    gap: 8px;
+
+    gap: 7px;
   }
 
-  .list-heading :deep(.add-todo-button) {
-    min-width: 140px;
-    height: 46px;
+  .list-title {
+    font-size: 20px;
+  }
 
-    padding: 0 14px;
+  .todo-count {
+    min-width: 44px;
 
-    font-size: 14px;
+    padding: 4px 7px;
+
+    font-size: 12px;
   }
 }
 </style>
