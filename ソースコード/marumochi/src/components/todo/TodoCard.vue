@@ -15,7 +15,7 @@
             aria-label="TODOを編集"
             @click="startEditing"
           >
-            <img :src="editIcon" alt="" class="edit-icon" />
+            <img :src="editIcon" alt="編集" class="edit-icon" />
           </button>
 
           <!-- 削除 -->
@@ -25,7 +25,7 @@
             aria-label="TODOを削除"
             @click="requestDelete"
           >
-            <img :src="deleteIcon" alt="" class="delete-icon" />
+            <img :src="deleteIcon" alt="削除" class="delete-icon" />
           </button>
         </div>
       </div>
@@ -104,9 +104,9 @@ const emit = defineEmits(["delete", "update", "update-progress"]);
 
 const isEditing = ref(false);
 
-const cardBackgroundStyle = {
+const cardBackgroundStyle = computed(() => ({
   backgroundImage: `url(${todoBackground})`,
-};
+}));
 
 const formattedDeadline = computed(() => {
   if (!props.todo.hasDeadline || !props.todo.deadlineAt) {
@@ -119,13 +119,38 @@ const formattedDeadline = computed(() => {
     return "期限を取得できません";
   }
 
-  return new Intl.DateTimeFormat("ja-JP", {
+  const now = new Date();
+
+  const remainingMilliseconds = deadline.getTime() - now.getTime();
+
+  if (remainingMilliseconds <= 0) {
+    return "期限切れ";
+  }
+
+  const millisecondsPerHour = 1000 * 60 * 60;
+
+  const millisecondsPerDay = millisecondsPerHour * 24;
+
+  const remainingDays = Math.floor(remainingMilliseconds / millisecondsPerDay);
+
+  const remainingHours = Math.floor(
+    (remainingMilliseconds % millisecondsPerDay) / millisecondsPerHour,
+  );
+
+  const formattedDate = new Intl.DateTimeFormat("ja-JP", {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
+    hour12: false,
   }).format(deadline);
+
+  if (remainingDays > 0) {
+    return `あと${remainingDays}日${remainingHours}時間（${formattedDate}）`;
+  }
+
+  return `あと${remainingHours}時間（${formattedDate}）`;
 });
 
 const hasRepeat = computed(() => Boolean(props.todo.repeatEnabled));
@@ -235,6 +260,8 @@ function updateProgress(progress) {
   background-color: transparent;
 
   cursor: pointer;
+
+  transition: background-color 0.2s;
 }
 
 .edit-button:hover {
@@ -247,7 +274,6 @@ function updateProgress(progress) {
 
 .icon-button:focus-visible {
   outline: 3px solid rgba(21, 151, 229, 0.3);
-
   outline-offset: 2px;
 }
 
@@ -294,15 +320,14 @@ function updateProgress(progress) {
 .repeat-disabled {
   color: #000000;
   font-size: 20px;
-  font-weight: 400;
 }
 
 .progress-area {
-  margin-top: 21px;
+  margin-top: 22px;
 }
 
 .progress-header {
-  margin-bottom: 9px;
+  margin-bottom: 10px;
 
   display: flex;
   justify-content: space-between;
@@ -312,12 +337,13 @@ function updateProgress(progress) {
 .completed-message {
   width: fit-content;
 
-  margin: 12px auto 0;
+  margin: 14px auto 0;
 
   padding: 5px 16px;
 
-  background-color: #12a91a;
   border-radius: 16px;
+
+  background-color: #12a91a;
 
   color: #ffffff;
   font-size: 15px;

@@ -1,11 +1,15 @@
 <template>
   <section class="todo-list">
+    <!-- TODOが0件 -->
     <div v-if="todos.length === 0" class="empty-message">
       <p class="empty-message__title">TODOがありません</p>
 
-      <p class="empty-message__description">新しいTODOを追加してください。</p>
+      <p class="empty-message__description">
+        右上の「TODO追加」ボタンから 新しいTODOを追加してください。
+      </p>
     </div>
 
+    <!-- TODO一覧 -->
     <div v-else class="todo-list__items">
       <TodoCard
         v-for="todo in todos"
@@ -53,7 +57,7 @@ function handleProgressUpdate(payload) {
   display: flex;
   flex-direction: column;
 
-  gap: 16px;
+  gap: 18px;
 }
 
 .empty-message {
@@ -62,24 +66,24 @@ function handleProgressUpdate(payload) {
 
   padding: 48px 20px;
 
-  background-color: #f7f7f7;
   border: 2px dashed #bdbdbd;
-  border-radius: 16px;
+  border-radius: 18px;
+
+  background-color: #f8f8f8;
 
   display: flex;
   flex-direction: column;
   justify-content: center;
-
-  text-align: center;
+  align-items: center;
 
   box-sizing: border-box;
 }
 
 .empty-message__title {
-  margin: 0 0 8px;
+  margin: 0 0 10px;
 
   color: #555555;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
 }
 
@@ -87,6 +91,28 @@ function handleProgressUpdate(payload) {
   margin: 0;
 
   color: #777777;
-  font-size: 14px;
+  font-size: 15px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .todo-list__items {
+    gap: 14px;
+  }
+
+  .empty-message {
+    min-height: 180px;
+
+    padding: 32px 16px;
+  }
+
+  .empty-message__title {
+    font-size: 18px;
+  }
+
+  .empty-message__description {
+    font-size: 14px;
+  }
 }
 </style>

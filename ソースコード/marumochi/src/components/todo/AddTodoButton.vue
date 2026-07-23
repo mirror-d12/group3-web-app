@@ -3,7 +3,7 @@
     type="button"
     class="add-todo-button"
     aria-label="TODOを追加"
-    @click="$emit('click')"
+    @click="handleClick"
   >
     <img :src="addIcon" alt="" class="add-icon" />
 
@@ -14,7 +14,11 @@
 <script setup>
 import addIcon from "../../images/todo_add.png";
 
-defineEmits(["click"]);
+const emit = defineEmits(["click"]);
+
+function handleClick() {
+  emit("click");
+}
 </script>
 
 <style scoped>
@@ -42,20 +46,10 @@ defineEmits(["click"]);
   cursor: pointer;
 
   box-shadow: 0 4px 9px rgba(255, 170, 0, 0.35);
-
-  transition:
-    transform 0.2s ease,
-    background-color 0.2s ease;
 }
 
 .add-todo-button:hover {
   background-color: #ee9e00;
-  transform: translateY(-2px);
-}
-
-.add-todo-button:focus-visible {
-  outline: 3px solid rgba(255, 170, 0, 0.35);
-  outline-offset: 3px;
 }
 
 .add-icon {
@@ -63,21 +57,5 @@ defineEmits(["click"]);
   height: 25px;
 
   object-fit: contain;
-}
-
-@media (max-width: 600px) {
-  .add-todo-button {
-    min-width: 140px;
-    height: 46px;
-
-    padding: 0 14px;
-
-    font-size: 14px;
-  }
-
-  .add-icon {
-    width: 22px;
-    height: 22px;
-  }
 }
 </style>

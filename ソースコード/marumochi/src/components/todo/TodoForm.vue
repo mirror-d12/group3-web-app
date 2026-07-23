@@ -18,7 +18,7 @@
       />
     </div>
 
-    <!-- 期限ありTODOの場合 -->
+    <!-- 期限ありTODOの場合のみ表示 -->
     <template v-if="hasDeadline">
       <!-- 期限 -->
       <div class="form-group">
@@ -72,7 +72,7 @@
         </div>
       </div>
 
-      <!-- ONのときだけ表示 -->
+      <!-- 繰り返しONの場合のみ表示 -->
       <div v-if="repeatEnabled" class="form-group">
         <label :for="repeatInputId" class="form-label"> 繰り返し間隔 </label>
 
@@ -152,7 +152,8 @@ const deadlineInputId = computed(() => `todo-deadline-${props.mode}`);
 const repeatInputId = computed(() => `todo-repeat-${props.mode}`);
 
 /**
- * ISO形式の日時をdatetime-local用に変換します。
+ * ISO形式の日時を
+ * datetime-localで使用できる形式へ変換します。
  */
 function toDateTimeLocalValue(isoDate) {
   if (!isoDate) {
@@ -173,7 +174,8 @@ function toDateTimeLocalValue(isoDate) {
 }
 
 /**
- * 追加時の初期期限を1日後にします。
+ * 追加時の初期期限を
+ * 現在日時の1日後にします。
  */
 function createDefaultDeadline() {
   const date = new Date();
@@ -184,7 +186,8 @@ function createDefaultDeadline() {
 }
 
 /**
- * 編集対象または初期値をフォームへ反映します。
+ * 編集対象のTODOまたは初期値を
+ * フォームへ設定します。
  */
 function resetForm() {
   title.value = props.initialTodo?.title ?? "";
@@ -292,6 +295,10 @@ function submitForm() {
     repeatType:
       props.hasDeadline && repeatEnabled.value ? repeatType.value : null,
   };
+
+  if (props.mode === "add") {
+    todoData.progress = 0;
+  }
 
   errorMessage.value = "";
 
@@ -470,8 +477,12 @@ function cancelForm() {
 }
 
 .submit-button {
-  background-color: #1597e5;
+  background-color: #ffaa00;
   color: #ffffff;
+}
+
+.submit-button:hover {
+  background-color: #ee9e00;
 }
 
 @media (max-width: 600px) {
