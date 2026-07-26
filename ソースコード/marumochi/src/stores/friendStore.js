@@ -731,6 +731,141 @@ export const useFriendStore = defineStore("friend", {
     },
 
     /**
+     * 指定したユーザーとの
+     * フレンド関係を解除します。
+     */
+    removeFriend(friendId) {
+      const currentUserId = this.currentUserId;
+
+      const normalizedFriendId = Number(friendId);
+
+      if (currentUserId === null) {
+        throw new Error("ログイン中のユーザーが見つかりません。");
+      }
+
+      if (Number.isNaN(normalizedFriendId)) {
+        throw new Error("解除するフレンドが正しくありません。");
+      }
+
+      if (currentUserId === normalizedFriendId) {
+        throw new Error("自分自身をフレンド解除することはできません。");
+      }
+
+      const friendshipIndex = this.friendships.findIndex((friendship) => {
+        const userId1 = Number(friendship.userId1);
+
+        const userId2 = Number(friendship.userId2);
+
+        const direction1 =
+          userId1 === currentUserId && userId2 === normalizedFriendId;
+
+        const direction2 =
+          userId1 === normalizedFriendId && userId2 === currentUserId;
+
+        return direction1 || direction2;
+      });
+
+      if (friendshipIndex === -1) {
+        throw new Error("フレンド関係が見つかりません。");
+      }
+
+      const removedFriendship = this.friendships[friendshipIndex];
+
+      this.friendships.splice(friendshipIndex, 1);
+
+      /*
+       * 2人の間に残っている申請データも
+       * 削除します。
+       *
+       * 解除後に再びメール検索し、
+       * 新しい申請を送れるようにします。
+       */
+      this.friendRequests = this.friendRequests.filter((request) => {
+        const senderId = Number(request.senderId);
+
+        const receiverId = Number(request.receiverId);
+
+        const direction1 =
+          senderId === currentUserId && receiverId === normalizedFriendId;
+
+        const direction2 =
+          senderId === normalizedFriendId && receiverId === currentUserId;
+
+        return !(direction1 || direction2);
+      });
+
+      this.saveAll();
+
+      return removedFriendship;
+    },
+    /**
+     * 指定したユーザーとの
+     * フレンド関係を解除します。
+     */
+    removeFriend(friendId) {
+      const currentUserId = this.currentUserId;
+
+      const normalizedFriendId = Number(friendId);
+
+      if (currentUserId === null) {
+        throw new Error("ログイン中のユーザーが見つかりません。");
+      }
+
+      if (Number.isNaN(normalizedFriendId)) {
+        throw new Error("解除するフレンドが正しくありません。");
+      }
+
+      if (Number(currentUserId) === normalizedFriendId) {
+        throw new Error("自分自身をフレンド解除することはできません。");
+      }
+
+      const friendshipIndex = this.friendships.findIndex((friendship) => {
+        const userId1 = Number(friendship.userId1);
+
+        const userId2 = Number(friendship.userId2);
+
+        return (
+          (userId1 === Number(currentUserId) &&
+            userId2 === normalizedFriendId) ||
+          (userId1 === normalizedFriendId && userId2 === Number(currentUserId))
+        );
+      });
+
+      if (friendshipIndex === -1) {
+        throw new Error("フレンド関係が見つかりません。");
+      }
+
+      const removedFriendship = {
+        ...this.friendships[friendshipIndex],
+      };
+
+      this.friendships.splice(friendshipIndex, 1);
+
+      /*
+       * 解除した2人の間に残っている
+       * フレンド申請データも削除します。
+       * これにより、解除後に再申請できます。
+       */
+      this.friendRequests = this.friendRequests.filter((request) => {
+        const senderId = Number(request.senderId);
+
+        const receiverId = Number(request.receiverId);
+
+        const sameUsers =
+          (senderId === Number(currentUserId) &&
+            receiverId === normalizedFriendId) ||
+          (senderId === normalizedFriendId &&
+            receiverId === Number(currentUserId));
+
+        return !sameUsers;
+      });
+
+      this.saveAll();
+
+      return removedFriendship;
+    },
+
+    /**
      * フレンド関連データを
      * 初期状態へ戻します。
      */

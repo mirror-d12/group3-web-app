@@ -40,7 +40,6 @@
         <span class="friend-count"> {{ friends.length }}人 </span>
       </div>
 
-      <!-- フレンドがいない場合 -->
       <div v-if="friends.length === 0" class="empty-area">
         <p class="empty-title">フレンドがいません</p>
 
@@ -49,21 +48,21 @@
         </p>
       </div>
 
-      <!-- フレンド一覧 -->
       <div v-else class="friend-list">
         <FriendCard
           v-for="friend in friends"
           :key="friend.id"
           :friend="friend"
           :notification-enabled="friendStore.getNotificationEnabled(friend.id)"
+          :removing="removingFriendId === friend.id"
           @update:notification-enabled="
             updateNotificationEnabled(friend, $event)
           "
+          @remove="removeFriend"
         />
       </div>
     </section>
 
-    <!-- フレンド追加ダイアログ -->
     <AddFriendDialog v-model="isAddDialogOpen" />
   </main>
 </template>
@@ -83,41 +82,34 @@ const isAddDialogOpen = ref(false);
 
 const processingRequestId = ref(null);
 
-/**
- * 現在のフレンド一覧
- */
+const removingFriendId = ref(null);
+
 const friends = computed(() => {
   return friendStore.currentUserFriends;
 });
 
-/**
- * 受信中のフレンド申請一覧
- *
- * senderが見つからない申請は
- * 画面に表示しません。
- */
 const incomingRequests = computed(() => {
   return friendStore.incomingRequestsWithUsers.filter(
     (request) => request.sender !== null,
   );
 });
 
-/**
- * フレンド追加ダイアログを開きます。
- */
 function openAddDialog() {
   isAddDialogOpen.value = true;
 }
 
-/**
- * 受信申請一覧から
- * 指定IDの申請を取得します。
- */
 function findIncomingRequest(requestId) {
   return (
     incomingRequests.value.find(
       (request) => Number(request.id) === Number(requestId),
     ) ?? null
+  );
+}
+
+function findFriend(friendId) {
+  return (
+    friends.value.find((friend) => Number(friend.id) === Number(friendId)) ??
+    null
   );
 }
 
@@ -210,6 +202,46 @@ function rejectRequest(requestId) {
 }
 
 /**
+ * フレンドを解除します。
+ */
+function removeFriend(friendId) {
+  const targetFriend = findFriend(friendId);
+
+  if (!targetFriend) {
+    window.alert("解除するフレンドが見つかりません。");
+
+    return;
+  }
+
+  const friendName =
+    targetFriend.userName ?? targetFriend.name ?? "このユーザー";
+
+  const shouldRemove = window.confirm(
+    `${friendName}さんとの` + "フレンド関係を解除しますか？",
+  );
+
+  if (!shouldRemove) {
+    return;
+  }
+
+  removingFriendId.value = friendId;
+
+  try {
+    friendStore.removeFriend(friendId);
+
+    window.alert(`${friendName}さんとの` + "フレンド関係を解除しました。");
+  } catch (error) {
+    console.error("フレンド解除エラー:", error);
+
+    window.alert(
+      error instanceof Error ? error.message : "フレンド解除に失敗しました。",
+    );
+  } finally {
+    removingFriendId.value = null;
+  }
+}
+
+/**
  * 通知共有設定を更新します。
  */
 async function updateNotificationEnabled(friend, enabled) {
@@ -218,10 +250,6 @@ async function updateNotificationEnabled(friend, enabled) {
   try {
     friendStore.setNotificationEnabled(friend.id, enabled);
 
-    /*
-     * OFFからONへ変更したときだけ、
-     * テスト通知を表示します。
-     */
     if (!previousEnabled && enabled) {
       await sendTestNotification(friend);
     }
@@ -236,10 +264,6 @@ async function updateNotificationEnabled(friend, enabled) {
   }
 }
 
-/**
- * 通知共有をONにしたときの
- * テスト通知です。
- */
 async function sendTestNotification(friend) {
   const friendName = friend.userName ?? friend.name ?? "フレンド";
 
@@ -247,10 +271,6 @@ async function sendTestNotification(friend) {
 
   const body = `${friendName}さんが` + "TODOを達成しました！";
 
-  /*
-   * Notification APIに
-   * 対応していない場合
-   */
   if (!("Notification" in window)) {
     window.alert(body);
     return;
@@ -271,10 +291,6 @@ async function sendTestNotification(friend) {
       return;
     }
 
-    /*
-     * 通知が許可されていない場合は、
-     * alertで表示します。
-     */
     window.alert(body);
   } catch (error) {
     console.error("通知表示エラー:", error);
