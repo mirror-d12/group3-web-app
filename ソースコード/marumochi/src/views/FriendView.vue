@@ -32,6 +32,28 @@
       </div>
     </section>
 
+    <!-- 送信済みの申請 -->
+    <section
+      v-if="outgoingRequests.length > 0"
+      class="outgoing-request-section"
+    >
+      <div class="section-heading">
+        <h2 class="section-title">送信済みの申請</h2>
+
+        <span class="outgoing-request-count">
+          {{ outgoingRequests.length }}件
+        </span>
+      </div>
+
+      <div class="outgoing-request-list">
+        <SentFriendRequestCard
+          v-for="request in outgoingRequests"
+          :key="request.id"
+          :request="request"
+        />
+      </div>
+    </section>
+
     <!-- フレンド一覧 -->
     <section class="friends-section">
       <div class="section-heading">
@@ -75,6 +97,7 @@ import { useFriendStore } from "../stores/friendStore";
 import AddFriendDialog from "../components/friend/AddFriendDialog.vue";
 import FriendCard from "../components/friend/FriendCard.vue";
 import FriendRequestCard from "../components/friend/FriendRequestCard.vue";
+import SentFriendRequestCard from "../components/friend/SentFriendRequestCard.vue";
 
 const friendStore = useFriendStore();
 
@@ -91,6 +114,16 @@ const friends = computed(() => {
 const incomingRequests = computed(() => {
   return friendStore.incomingRequestsWithUsers.filter(
     (request) => request.sender !== null,
+  );
+});
+
+/**
+ * 送信済みで承認待ちの
+ * フレンド申請一覧です。
+ */
+const outgoingRequests = computed(() => {
+  return friendStore.outgoingRequestsWithUsers.filter(
+    (request) => request.receiver !== null,
   );
 });
 
@@ -470,6 +503,38 @@ async function sendTestNotification(friend) {
   line-height: 1.6;
 }
 
+.outgoing-request-section {
+  width: 100%;
+
+  margin-bottom: 36px;
+}
+
+.outgoing-request-count {
+  min-width: 48px;
+
+  padding: 4px 10px;
+
+  border-radius: 14px;
+
+  background-color: #e8efff;
+
+  color: #2563eb;
+  font-size: 13px;
+  font-weight: 800;
+  text-align: center;
+
+  box-sizing: border-box;
+}
+
+.outgoing-request-list {
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 16px;
+}
+
 @media (max-width: 600px) {
   .friend-view {
     padding: 26px 14px 120px;
@@ -497,6 +562,14 @@ async function sendTestNotification(friend) {
 
   .request-list,
   .friend-list {
+    gap: 13px;
+  }
+
+  .outgoing-request-section {
+    margin-bottom: 28px;
+  }
+
+  .outgoing-request-list {
     gap: 13px;
   }
 }
