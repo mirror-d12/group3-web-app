@@ -6,16 +6,26 @@
       <div class="title-line"></div>
     </header>
 
+    <!-- ログインユーザーがいない場合 -->
     <p v-if="!currentUser" class="error-message">
       ログイン中のユーザーが見つかりません。
     </p>
 
     <template v-else>
-      <!-- プロフィール情報 -->
+      <!-- プロフィール -->
       <ProfileCard
         :user="currentUser"
         @edit-name="openNameEditor"
         @edit-avatar="openAvatarSelector"
+      />
+
+      <div class="profile-divider"></div>
+
+      <!-- 付箋風のユーザー統計 -->
+      <UserStats
+        :friend-count="friendCount"
+        :login-days="loginDays"
+        :total-todo-count="totalTodoCount"
       />
 
       <!-- ユーザー名編集 -->
@@ -25,17 +35,19 @@
         @save="saveUserName"
       />
 
-      <!-- アバター選択 -->
+      <!-- プロフィール画像選択 -->
       <AvatarSelector
         v-model="isAvatarSelectorOpen"
         :current-avatar="currentUser.profileImage"
         @save="saveAvatar"
       />
 
+      <!-- 成功メッセージ -->
       <p v-if="successMessage" class="success-message">
         {{ successMessage }}
       </p>
 
+      <!-- エラーメッセージ -->
       <p v-if="errorMessage" class="error-message">
         {{ errorMessage }}
       </p>
@@ -46,22 +58,59 @@
 <script setup>
 import { computed, ref } from "vue";
 
+import { useFriendStore } from "../stores/friendStore";
 import { useUserStore } from "../stores/userStore";
 
 import AvatarSelector from "../components/mypage/AvatarSelector.vue";
 import ProfileCard from "../components/mypage/ProfileCard.vue";
 import UserNameEditor from "../components/mypage/UserNameEditor.vue";
+import UserStats from "../components/mypage/UserStats.vue";
 
 const userStore = useUserStore();
 
+const friendStore = useFriendStore();
+
 const isNameEditorOpen = ref(false);
+
 const isAvatarSelectorOpen = ref(false);
 
 const successMessage = ref("");
+
 const errorMessage = ref("");
 
+/**
+ * ログイン中のユーザー
+ */
 const currentUser = computed(() => {
   return userStore.currentUser;
+});
+
+/**
+ * 現在のフレンド数
+ *
+ * users.jsのfriendCountではなく、
+ * friendStore上の現在の関係数を使います。
+ * フレンド追加・解除が即時反映されます。
+ */
+const friendCount = computed(() => {
+  return friendStore.currentUserFriends.length;
+});
+
+/**
+ * 連続ログイン日数
+ */
+const loginDays = computed(() => {
+  return Number(currentUser.value?.loginDays ?? 0);
+});
+
+/**
+ * 累計で達成したTODO数
+ *
+ * users.jsのtotalTodoCountを
+ * そのまま表示します。
+ */
+const totalTodoCount = computed(() => {
+  return Number(currentUser.value?.totalTodoCount ?? 0);
 });
 
 function clearMessages() {
@@ -71,14 +120,19 @@ function clearMessages() {
 
 function openNameEditor() {
   clearMessages();
+
   isNameEditorOpen.value = true;
 }
 
 function openAvatarSelector() {
   clearMessages();
+
   isAvatarSelectorOpen.value = true;
 }
 
+/**
+ * ユーザー名を保存します。
+ */
 function saveUserName(userName) {
   clearMessages();
 
@@ -98,6 +152,9 @@ function saveUserName(userName) {
   }
 }
 
+/**
+ * プロフィール画像を保存します。
+ */
 function saveAvatar(profileImage) {
   clearMessages();
 
@@ -108,7 +165,7 @@ function saveAvatar(profileImage) {
 
     successMessage.value = "プロフィール画像を変更しました。";
   } catch (error) {
-    console.error("アバター変更エラー:", error);
+    console.error("プロフィール画像変更エラー:", error);
 
     errorMessage.value =
       error instanceof Error
@@ -152,9 +209,18 @@ function saveAvatar(profileImage) {
   background-color: #111111;
 }
 
+.profile-divider {
+  width: 100%;
+  height: 2px;
+
+  margin: 16px 0 24px;
+
+  background-color: #111111;
+}
+
 .success-message,
 .error-message {
-  margin: 18px 0 0;
+  margin: 20px 0 0;
 
   font-size: 15px;
   font-weight: 700;
@@ -176,6 +242,10 @@ function saveAvatar(profileImage) {
 
   .page-title {
     font-size: 32px;
+  }
+
+  .profile-divider {
+    margin: 12px 0 20px;
   }
 }
 </style>
