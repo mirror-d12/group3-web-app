@@ -105,9 +105,9 @@ function useFallbackImage(event) {
 }
 
 .name-area {
-  min-height: 70px;
+  min-height: 80px;
 
-  padding: 0 12px;
+  padding: 0 10px;
 
   display: flex;
   justify-content: space-between;
@@ -222,10 +222,10 @@ function useFallbackImage(event) {
 .image-setting-button {
   position: absolute;
   top: -24px;
-  right: -28px;
+  right: -170px;
 
-  width: 82px;
-  height: 82px;
+  width: 92px;
+  height: 92px;
 
   padding: 8px;
 

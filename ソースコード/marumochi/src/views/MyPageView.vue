@@ -339,7 +339,7 @@ async function executeDeleteAccount() {
 }
 
 .page-header {
-  margin-bottom: 26px;
+  margin-bottom: 10px;
 }
 
 .page-title-row {
@@ -363,13 +363,13 @@ async function executeDeleteAccount() {
 }
 
 .header-icon-button {
-  width: 58px;
-  height: 58px;
+  width: 78px;
+  height: 78px;
 
-  padding: 7px;
+  padding: 6px;
 
   border: none;
-  border-radius: 14px;
+  border-radius: 18px;
 
   display: flex;
   justify-content: center;
@@ -381,8 +381,7 @@ async function executeDeleteAccount() {
 
   transition:
     background-color 0.2s ease,
-    transform 0.2s ease,
-    opacity 0.2s ease;
+    transform 0.2s ease;
 }
 
 .header-icon-button:first-child {
@@ -411,8 +410,8 @@ async function executeDeleteAccount() {
 }
 
 .header-icon {
-  width: 44px;
-  height: 44px;
+  width: 62px;
+  height: 62px;
 
   display: block;
 
@@ -470,15 +469,15 @@ async function executeDeleteAccount() {
   }
 
   .header-icon-button {
-    width: 48px;
-    height: 48px;
+    width: 64px;
+    height: 64px;
 
-    padding: 5px;
+    padding: 4px;
   }
 
   .header-icon {
-    width: 38px;
-    height: 38px;
+    width: 52px;
+    height: 52px;
   }
 
   .profile-divider {
