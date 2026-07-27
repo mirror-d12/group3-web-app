@@ -46,7 +46,14 @@ export const useUserStore = defineStore("user", {
 
   actions: {
     saveUsers() {
-      localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(this.users));
+      localStorage.setItem("todo-manager-users", JSON.stringify(this.users));
+    },
+
+    saveCurrentUser() {
+      localStorage.setItem(
+        "todo-manager-current-user",
+        JSON.stringify(this.currentUser),
+      );
     },
 
     login(email, password, keepLogin = false) {
@@ -78,9 +85,17 @@ export const useUserStore = defineStore("user", {
       return true;
     },
 
+    /**
+     * ログアウトします。
+     *
+     * ユーザー本体は削除せず、
+     * ログイン状態だけ解除します。
+     */
     logout() {
       if (this.currentUser) {
-        const user = this.users.find((item) => item.id === this.currentUser.id);
+        const user = this.users.find(
+          (item) => Number(item.id) === Number(this.currentUser.id),
+        );
 
         if (user) {
           user.isLoggedIn = false;
@@ -89,9 +104,40 @@ export const useUserStore = defineStore("user", {
 
       this.currentUser = null;
 
-      localStorage.removeItem(CURRENT_USER_STORAGE_KEY);
+      this.saveUsers();
+
+      localStorage.removeItem("todo-manager-current-user");
+    },
+
+    /**
+     * ログイン中のアカウントを削除します。
+     */
+    deleteCurrentAccount() {
+      if (!this.currentUser) {
+        throw new Error("ログイン中のユーザーが見つかりません。");
+      }
+
+      const currentUserId = Number(this.currentUser.id);
+
+      const userExists = this.users.some(
+        (user) => Number(user.id) === currentUserId,
+      );
+
+      if (!userExists) {
+        throw new Error("削除するユーザーが見つかりません。");
+      }
+
+      this.users = this.users.filter(
+        (user) => Number(user.id) !== currentUserId,
+      );
+
+      this.currentUser = null;
 
       this.saveUsers();
+
+      localStorage.removeItem("todo-manager-current-user");
+
+      return currentUserId;
     },
 
     register(userName, email, password) {
@@ -194,6 +240,88 @@ export const useUserStore = defineStore("user", {
         success: true,
         message: "",
       };
+    },
+    /**
+     * 現在ログイン中のユーザー名を変更します。
+     */
+    updateCurrentUserName(userName) {
+      const trimmedName = String(userName ?? "").trim();
+
+      if (!trimmedName) {
+        throw new Error("ユーザー名を入力してください。");
+      }
+
+      if (trimmedName.length > 30) {
+        throw new Error("ユーザー名は30文字以内で入力してください。");
+      }
+
+      if (!this.currentUser) {
+        throw new Error("ログイン中のユーザーが見つかりません。");
+      }
+
+      const user = this.users.find(
+        (item) => Number(item.id) === Number(this.currentUser.id),
+      );
+
+      if (!user) {
+        throw new Error("ユーザー情報が見つかりません。");
+      }
+
+      user.userName = trimmedName;
+
+      this.currentUser = {
+        ...this.currentUser,
+        userName: trimmedName,
+      };
+
+      this.saveUsers();
+      this.saveCurrentUser();
+
+      return user;
+    },
+
+    /**
+     * 現在ログイン中のプロフィール画像を変更します。
+     */
+    updateCurrentUserAvatar(profileImage) {
+      const validAvatars = [
+        "profile1.png",
+        "profile2.png",
+        "profile3.png",
+        "profile4.png",
+        "profile5.png",
+        "profile6.png",
+        "profile7.png",
+        "profile8.png",
+      ];
+
+      if (!validAvatars.includes(profileImage)) {
+        throw new Error("正しいプロフィール画像を選択してください。");
+      }
+
+      if (!this.currentUser) {
+        throw new Error("ログイン中のユーザーが見つかりません。");
+      }
+
+      const user = this.users.find(
+        (item) => Number(item.id) === Number(this.currentUser.id),
+      );
+
+      if (!user) {
+        throw new Error("ユーザー情報が見つかりません。");
+      }
+
+      user.profileImage = profileImage;
+
+      this.currentUser = {
+        ...this.currentUser,
+        profileImage,
+      };
+
+      this.saveUsers();
+      this.saveCurrentUser();
+
+      return user;
     },
   },
 });
