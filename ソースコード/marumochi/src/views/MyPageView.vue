@@ -100,10 +100,10 @@ import { useFriendStore } from "../stores/friendStore";
 import { useTodoStore } from "../stores/todoStore";
 import { useUserStore } from "../stores/userStore";
 
-import AvatarSelector from "../components/mypage/AvatarSelector.vue";
-import ProfileCard from "../components/mypage/ProfileCard.vue";
-import UserNameEditor from "../components/mypage/UserNameEditor.vue";
-import UserStats from "../components/mypage/UserStats.vue";
+import AvatarSelector from "../components/profile/AvatarSelector.vue";
+import ProfileCard from "../components/profile/ProfileCard.vue";
+import UserNameEditor from "../components/profile/UserNameEditor.vue";
+import UserStats from "../components/profile/UserStats.vue";
 import ConfirmDialog from "../components/common/ConfirmDialog.vue";
 
 import logoutIcon from "../images/logout.png";
