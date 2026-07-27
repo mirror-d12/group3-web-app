@@ -593,5 +593,35 @@ export const useTodoStore = defineStore("todo", {
 
       this.saveTodos();
     },
+
+    /**
+     * 指定ユーザーが所有するTODOを
+     * すべて削除します。
+     */
+    deleteTodosByUserId(userId) {
+      const normalizedUserId = Number(userId);
+
+      if (Number.isNaN(normalizedUserId)) {
+        throw new Error("削除するユーザーIDが正しくありません。");
+      }
+
+      const beforeCount = this.todos.length;
+
+      this.todos = this.todos.filter(
+        (todo) => Number(todo.userId) !== normalizedUserId,
+      );
+
+      const deletedCount = beforeCount - this.todos.length;
+
+      /*
+       * todoStore.jsで使用している
+       * 保存メソッド名に合わせてください。
+       */
+      this.saveTodos();
+
+      return {
+        deletedCount,
+      };
+    },
   },
 });

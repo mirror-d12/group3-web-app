@@ -85,9 +85,17 @@ export const useUserStore = defineStore("user", {
       return true;
     },
 
+    /**
+     * ログアウトします。
+     *
+     * ユーザー本体は削除せず、
+     * ログイン状態だけ解除します。
+     */
     logout() {
       if (this.currentUser) {
-        const user = this.users.find((item) => item.id === this.currentUser.id);
+        const user = this.users.find(
+          (item) => Number(item.id) === Number(this.currentUser.id),
+        );
 
         if (user) {
           user.isLoggedIn = false;
@@ -96,9 +104,40 @@ export const useUserStore = defineStore("user", {
 
       this.currentUser = null;
 
-      localStorage.removeItem(CURRENT_USER_STORAGE_KEY);
+      this.saveUsers();
+
+      localStorage.removeItem("todo-manager-current-user");
+    },
+
+    /**
+     * ログイン中のアカウントを削除します。
+     */
+    deleteCurrentAccount() {
+      if (!this.currentUser) {
+        throw new Error("ログイン中のユーザーが見つかりません。");
+      }
+
+      const currentUserId = Number(this.currentUser.id);
+
+      const userExists = this.users.some(
+        (user) => Number(user.id) === currentUserId,
+      );
+
+      if (!userExists) {
+        throw new Error("削除するユーザーが見つかりません。");
+      }
+
+      this.users = this.users.filter(
+        (user) => Number(user.id) !== currentUserId,
+      );
+
+      this.currentUser = null;
 
       this.saveUsers();
+
+      localStorage.removeItem("todo-manager-current-user");
+
+      return currentUserId;
     },
 
     register(userName, email, password) {

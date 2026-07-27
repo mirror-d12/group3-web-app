@@ -876,5 +876,54 @@ export const useFriendStore = defineStore("friend", {
 
       this.saveAll();
     },
+    /**
+     * 指定ユーザーに関係する
+     * フレンド関係とフレンド申請を
+     * すべて削除します。
+     */
+    deleteUserFriendData(userId) {
+      const normalizedUserId = Number(userId);
+
+      if (Number.isNaN(normalizedUserId)) {
+        throw new Error("削除するユーザーIDが正しくありません。");
+      }
+
+      const friendshipCountBefore = this.friendships.length;
+
+      const requestCountBefore = this.friendRequests.length;
+
+      /*
+       * 指定ユーザーが含まれる
+       * フレンド関係を削除します。
+       */
+      this.friendships = this.friendships.filter(
+        (friendship) =>
+          Number(friendship.userId1) !== normalizedUserId &&
+          Number(friendship.userId2) !== normalizedUserId,
+      );
+
+      /*
+       * 指定ユーザーが送信または受信した
+       * フレンド申請を削除します。
+       */
+      this.friendRequests = this.friendRequests.filter(
+        (request) =>
+          Number(request.senderId) !== normalizedUserId &&
+          Number(request.receiverId) !== normalizedUserId,
+      );
+
+      const deletedFriendshipCount =
+        friendshipCountBefore - this.friendships.length;
+
+      const deletedRequestCount =
+        requestCountBefore - this.friendRequests.length;
+
+      this.saveAll();
+
+      return {
+        deletedFriendshipCount,
+        deletedRequestCount,
+      };
+    },
   },
 });
